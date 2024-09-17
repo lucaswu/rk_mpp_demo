@@ -19,6 +19,18 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 message("1111=${3RD_INCLUDE_DIR}/mpp/inc}")
 
+#ffmpeg
+include_directories(${3RD_INCLUDE_DIR}/ffmpeg/include)
+link_directories( ${LIB_DIR}/ffmpeg/${ANDROID_ABI})
+set(ffmpeg-libs
+        avformat
+        avcodec
+        avfilter
+        swresample
+        swscale
+        avutil
+)
+
 ##MPP
 add_library( mpp SHARED IMPORTED )
 set_target_properties(mpp
@@ -34,6 +46,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
 
         native-lib.cpp
         mpp/MppDecoder264.cpp
+        mpp/MppEnccoder264.cpp
         utils/ZYLog.cpp
 )
 
@@ -45,4 +58,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log
         mpp
-        vpu)
+        vpu
+        ${ffmpeg-libs})

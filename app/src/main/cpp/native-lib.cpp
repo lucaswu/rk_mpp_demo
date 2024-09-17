@@ -5,11 +5,49 @@
 #include <fstream>
 #include "utils/ZYLog.h"
 
+extern "C" {
+#include <libavcodec/version.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/version.h>
+#include <libavutil/version.h>
+#include <libavfilter/version.h>
+#include <libswresample/version.h>
+#include <libswscale/version.h>
+};
+
+
 std::shared_ptr<MPP::MppDecoder264> gMppDecoder264;
+
+void test(){
+    char strBuffer[1024 * 4] = {0};
+    strcat(strBuffer, "libavcodec : ");
+    strcat(strBuffer, AV_STRINGIFY(LIBAVCODEC_VERSION));
+    strcat(strBuffer, "\nlibavformat : ");
+    strcat(strBuffer, AV_STRINGIFY(LIBAVFORMAT_VERSION));
+    strcat(strBuffer, "\nlibavutil : ");
+    strcat(strBuffer, AV_STRINGIFY(LIBAVUTIL_VERSION));
+    strcat(strBuffer, "\nlibavfilter : ");
+    strcat(strBuffer, AV_STRINGIFY(LIBAVFILTER_VERSION));
+    strcat(strBuffer, "\nlibswresample : ");
+    strcat(strBuffer, AV_STRINGIFY(LIBSWRESAMPLE_VERSION));
+    strcat(strBuffer, "\nlibswscale : ");
+    strcat(strBuffer, AV_STRINGIFY(LIBSWSCALE_VERSION));
+    strcat(strBuffer, "\navcodec_configure : \n");
+    strcat(strBuffer, avcodec_configuration());
+    strcat(strBuffer, "\navcodec_license : ");
+    strcat(strBuffer, avcodec_license());
+
+    ZY_LOG("avcodec_configure :%s\n",avcodec_configuration());
+
+}
+
+
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_rk_1mpp_1test_MainActivity_testDecoder(JNIEnv *env, jobject thiz) {
+
+    test();
     // TODO: implement testDecoder()
     gMppDecoder264 = std::make_shared<MPP::MppDecoder264>();
 

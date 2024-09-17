@@ -15,6 +15,26 @@ namespace MPP{
            mBuffer.reset();
            mBuffer = nullptr;
         }
+
+        deinit();
+    }
+
+    void MppDecoder264::deinit()
+    {
+        auto ret = mMpi->reset(mCtx);
+        if(MPP_OK != ret){
+            return;
+        }
+        if(mPkt){
+            mpp_packet_deinit(&mPkt);
+            mPkt = nullptr;
+        }
+
+        if(mCtx){
+            mpp_destroy(mCtx);
+            mCtx = nullptr;
+        }
+
     }
 
     bool MppDecoder264::init() {

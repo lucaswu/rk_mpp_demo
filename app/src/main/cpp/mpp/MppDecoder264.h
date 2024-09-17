@@ -9,6 +9,7 @@ namespace MPP{
         void decode(uint8_t *pData,int size,RK_U32 eos);
     private:
         bool init();
+        void deinit();
         void dumFrame(MppFrame frame);
 
         bool mIsInit = false;
