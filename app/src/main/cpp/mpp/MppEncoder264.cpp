@@ -5,9 +5,11 @@
 #include <string>
 #include "MppEncoder264.h"
 #include "utils/ZYLog.h"
-
+#include "../3rd/mpp/inc/mpp_common.h"
+#include "../3rd/mpp/inc/mpp_env.h"
+#include "utils/ZYTimer.h"
 namespace MPP {
-    MppEncoder264::MppEncoder264(int width, int height, int fps, int bitRate = 40000)
+    MppEncoder264::MppEncoder264(int width, int height, int fps, int bitRate )
             : mWidth(width), mHeight(height), mFps(fps), mBitRate(bitRate) {
 
     }
@@ -33,6 +35,12 @@ namespace MPP {
         ret = mpp_buffer_group_get_internal(&mMppBufferGroup, MPP_BUFFER_TYPE_DMA_HEAP);
         if (MPP_OK != ret) {
             ZY_LOG("Failed to mpp_buffer_group_get_internal,error:%d\n", ret);
+            return false;
+        }
+
+        ret = mpp_buffer_group_limit_config(mMppBufferGroup,0,20);
+        if(MPP_OK != ret){
+            ZY_LOG("Failed to mpp_buffer_group_limit_config,Error:%d\n",ret);
             return false;
         }
 
@@ -155,5 +163,100 @@ namespace MPP {
         }
 
         ret = mMpi->control(mCtx, MPP_ENC_SET_CFG, mMppEncCfg);
+        if(MPP_OK != ret){
+            ZY_LOG("mpi control enc set cfg failed ret %d\n", ret);
+            return false;
+        }
+
+        ret = mpp_frame_init(&mFrameBufer);
+        if(MPP_OK != ret){
+            ZY_LOG("mpp_frame_init failed\n");
+            return false;
+        }
+
+
+        mpp_frame_set_width(mFrameBufer, mWidth);
+        mpp_frame_set_height(mFrameBufer, mHeight);
+        mpp_frame_set_hor_stride(mFrameBufer, cfg_hor_stride);
+        mpp_frame_set_ver_stride(mFrameBufer, cfg_ver_stride);
+        mpp_frame_set_fmt(mFrameBufer, MPP_FMT_YUV420P);
+        mpp_frame_set_eos(mFrameBufer, 0);
+
+        auto cfg_frame_size = MPP_ALIGN(cfg_hor_stride,64)*MPP_ALIGN(cfg_ver_stride,64)*3/2;
+        mFrameSize = mWidth*mHeight*3/2;
+
+        auto flag = MPP_FRAME_FMT_IS_FBC(MPP_FMT_YUV420P);
+
+        int cfg_header_size = 0 ;
+        if(flag){
+            cfg_header_size = MPP_ALIGN(MPP_ALIGN(mWidth, 16) *MPP_ALIGN(mHeight, 16) / 16, SZ_4K);
+        }
+
+        ret = mpp_buffer_get(mMppBufferGroup,&mMapBuffer,cfg_frame_size+cfg_header_size);
+        if( MPP_OK != ret){
+            ZY_LOG("failed to get buffer for input frame ret %d\n", ret);
+            return false;
+        }
+
+        mIsInit = true;
+        return true;
+
+    }
+
+    void MppEncoder264::encoder(uint8_t *pData){
+        if(pData == nullptr){
+            ZY_LOG("pData is nullptr");
+            return;
+        }
+
+        if(mIsInit == false){
+            auto ret = init();
+            if(ret ==false){
+                ZY_LOG("init error!");
+                return;
+            }
+        }
+
+        ZYTime timer;
+        auto ret = mpp_buffer_write(mMapBuffer,0,pData,mFrameSize);
+        if(MPP_OK != ret){
+            ZY_LOG("could not write data on frame\n");
+            return;
+        }
+
+        mpp_frame_set_buffer(mFrameBufer,mMapBuffer);
+
+        ret = mMpi->encode_put_frame(mCtx,mFrameBufer);
+        if(MPP_OK != ret){
+            ZY_LOG("Failed to encode put frame,error:%d",ret);
+            return;
+        }
+
+        MppPacket  packet = nullptr;
+        ret = mMpi->encode_get_packet(mCtx,&packet);
+        if(MPP_OK != ret){
+            ZY_LOG("encode_get_packet error!,Error:%d",ret);
+            return;
+        }
+
+        float differ = timer.GetTimeOfDuration();
+        ZY_LOG(":%f",differ);
+
+        if(packet){
+            auto bufdata = mpp_packet_get_pos(packet);
+            auto dataSize = mpp_packet_get_length(packet);
+
+
+            std::string fileName =
+                    std::string("/storage/emulated/0/Android/data/com.example.rk_mpp_test/cache/2.h264");
+            FILE*fp =fopen(fileName.c_str(),"ab+");
+            if(fp == nullptr){
+                ZY_LOG(" fopen %s error!",fileName.c_str());
+                return;
+            }
+
+            fwrite(bufdata,1,dataSize,fp);
+            fclose(fp);
+        }
     }
 }

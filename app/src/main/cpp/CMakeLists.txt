@@ -11,6 +11,11 @@ cmake_minimum_required(VERSION 3.22.1)
 # build script scope).
 project("rk_mpp_test")
 
+
+set(CMAKE_BUILD_TYPE "Release")
+
+set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+
 set(3RD_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rd/)
 include_directories( ${3RD_INCLUDE_DIR}/mpp/inc)
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/../libs)
@@ -46,7 +51,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
 
         native-lib.cpp
         mpp/MppDecoder264.cpp
-        mpp/MppEnccoder264.cpp
+        mpp/MppEncoder264.cpp
         utils/ZYLog.cpp
 )
 
