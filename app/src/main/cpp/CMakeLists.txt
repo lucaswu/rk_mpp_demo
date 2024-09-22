@@ -21,6 +21,7 @@ include_directories( ${3RD_INCLUDE_DIR}/mpp/inc)
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/../libs)
 
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories( ${3RD_INCLUDE_DIR})
 
 message("1111=${3RD_INCLUDE_DIR}/mpp/inc}")
 
@@ -47,6 +48,12 @@ set_target_properties(vpu
         PROPERTIES IMPORTED_LOCATION
         ${LIB_DIR}/mpp/${ANDROID_ABI}/libvpu.so)
 
+######         opencv         ######
+add_library( opencv-lib SHARED IMPORTED )
+set_target_properties(opencv-lib
+        PROPERTIES IMPORTED_LOCATION
+        ${LIB_DIR}/opencv/${ANDROID_ABI}/libopencv_java4.so)
+
 add_library(${CMAKE_PROJECT_NAME} SHARED
 
         native-lib.cpp
@@ -64,4 +71,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         log
         mpp
         vpu
-        ${ffmpeg-libs})
+        ${ffmpeg-libs}
+        opencv-lib)

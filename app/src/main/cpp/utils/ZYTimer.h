@@ -8,6 +8,9 @@ public:
     {
         gettimeofday(&mStartTime,NULL);
     }
+    void start(){
+        gettimeofday(&mStartTime,NULL);
+    }
     float GetTimeOfDuration()
     {
         gettimeofday(&mEndTime,NULL);

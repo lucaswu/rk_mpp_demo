@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         String dirUrl = getApplicationContext().getExternalCacheDir().getAbsolutePath();
         Log.i("lucas","dirUrl:"+dirUrl);
 
-//        testDecoder();
+//          testDecoder();
         
         testEncoder();
 

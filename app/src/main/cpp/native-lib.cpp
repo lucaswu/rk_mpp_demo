@@ -6,6 +6,8 @@
 #include <fstream>
 #include "utils/ZYLog.h"
 
+
+
 extern "C" {
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
@@ -17,8 +19,12 @@ extern "C" {
 };
 
 
+using namespace std;
+
+
 std::shared_ptr<MPP::MppDecoder264> gMppDecoder264;
 std::shared_ptr<MPP::MppEncoder264> gMppEncoder264;
+
 
 void test(){
     char strBuffer[1024 * 4] = {0};
@@ -45,6 +51,8 @@ void test(){
 
 
 
+
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_rk_1mpp_1test_MainActivity_testDecoder(JNIEnv *env, jobject thiz) {
@@ -53,7 +61,9 @@ Java_com_example_rk_1mpp_1test_MainActivity_testDecoder(JNIEnv *env, jobject thi
     // TODO: implement testDecoder()
     gMppDecoder264 = std::make_shared<MPP::MppDecoder264>();
 
-    std::string file_name = "/storage/emulated/0/Android/data/com.example.rk_mpp_test/cache/2.h264";
+
+
+    std::string file_name = "/storage/emulated/0/Android/data/com.example.rk_mpp_test/cache/test.h264";
 
     std::ifstream fin(file_name, std::ios::binary);
     if (!fin) {
@@ -67,15 +77,24 @@ Java_com_example_rk_1mpp_1test_MainActivity_testDecoder(JNIEnv *env, jobject thi
         fin.read((char*)pData,bufferSize);
         auto len = fin.gcount();
         gMppDecoder264->decode(pData,len,len!=bufferSize);
-    }
+
+//        gDecoder->Decode(pData,len,len!=bufferSize);
+   }
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_rk_1mpp_1test_MainActivity_testEncoder(JNIEnv *env, jobject thiz) {
-    gMppEncoder264 = std::make_shared<MPP::MppEncoder264>(1920,1080,30,400000*2);
-    std::string file_name = "/storage/emulated/0/Android/data/com.example.rk_mpp_test/cache/1920x1080.yuv";
+    remove("/storage/emulated/0/Android/data/com.example.rk_mpp_test/cache/2.h264");
+
+    gMppEncoder264 = std::make_shared<MPP::MppEncoder264>(1280,720,30,1024*1024*0.8);
+
+//    gEncoder = std::make_shared<MppEncoder>();
+//    gEncoder->init();
+    std::string file_name = "/storage/emulated/0/Android/data/com.example.rk_mpp_test/cache/1280x720_1.yuv";
+
+
 
     std::ifstream fin(file_name, std::ios::binary);
     if (!fin) {
@@ -83,11 +102,14 @@ Java_com_example_rk_1mpp_1test_MainActivity_testEncoder(JNIEnv *env, jobject thi
         return ;
     }
 
-    int bufferSize = 1920*1080*3/2;
+    int bufferSize = 1280*720*3/2;
     uint8_t *pData = new uint8_t [bufferSize];
     while(!fin.eof()){
         fin.read((char*)pData,bufferSize);
         auto len = fin.gcount();
         gMppEncoder264->encoder(pData);
+
+//        gEncoder->rkmpp_encode_frame(pData);
     }
+    ZY_LOG("encoder over!");
 }
