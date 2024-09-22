@@ -107,6 +107,8 @@ namespace MPP{
             return;
         }
 
+
+#if 1
 //        auto pBase = (RK_U8*)mpp_buffer_get_ptr(buffer);
         auto pY = (RK_U8*)mpp_buffer_get_ptr(buffer);;
         auto pUV = pY + hStride *vStride;
@@ -133,6 +135,7 @@ namespace MPP{
 
         ZY_LOG("size:(%d,%d),");
         ZY_LOG("save %s\n",fileName.c_str());
+#endif
 
     }
 
@@ -159,6 +162,7 @@ namespace MPP{
 
         auto times = 5;
         bool pktDone = false;
+
         while(1){
             if(!pktDone){
                 auto ret = mMpi->decode_put_packet(mCtx,mPkt);
@@ -194,6 +198,8 @@ namespace MPP{
                     mpp_frame_deinit(&frame);
                     frame = nullptr;
                     getFrame = 1;
+
+
                 }
                 if(mEos && pktDone &&!frameEos){
                     usleep(10 * 1000);

@@ -17,13 +17,19 @@ namespace MPP{
         int mFps ;
         int mBitRate;
 
+        int mWidthStride = 0 ;
+
         MppCtx mCtx = nullptr;
         MppApi *mMpi = nullptr;
-        MppBufferGroup mMppBufferGroup = nullptr;
+        MppBufferGroup mBufferGroup = nullptr;
         MppBuffer mFrameBufer = nullptr;
         MppBuffer mMapBuffer = nullptr;
+        MppBuffer mPktBuffer = nullptr;
         MppEncCfg mMppEncCfg = nullptr;
         int mFrameSize = 0 ;
+        MppPollType mTimeOut = MPP_POLL_BLOCK;
+
+        FILE *mFp_out;
     };
 }
 
